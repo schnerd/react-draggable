@@ -406,6 +406,35 @@ describe('react-draggable', function () {
          assert(!document.body.classList.contains('react-draggable-transparent-selection'));
        });
 
+    it('should not defocus inputs when unmounting', function () {
+      class TestCase extends React.Component {
+        constructor() {
+          super();
+          this.state = {text: false};
+        }
+        render() {
+          return (
+            <div>
+              <input type="text" onChange={(e) => this.setState({text: e.target.value})} />
+              {!this.state.text && (
+                <Draggable>
+                  <div />
+                </Draggable>
+              )}
+            </div>
+          );
+        }
+      }
+
+      drag = TestUtils.renderIntoDocument(<TestCase/>);
+      const input = ReactDOM.findDOMNode(drag).querySelector('input');
+      TestUtils.Simulate.click(input);
+      // This doesn't work in test environment
+      assert(window.getSelection().type === 'Caret');
+      TestUtils.Simulate.keyDown(input, {key: 'a', keyCode: 65, which: 65});
+      assert(window.getSelection().type === 'Caret');
+    });
+
     it('should be draggable when in an iframe', function (done) {
       let dragged = false;
       const dragElement = (
